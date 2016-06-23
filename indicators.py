@@ -67,6 +67,23 @@ def iTEMA(df, ma_period, ma_shift=0, applied_price='Close'):
     EMA3 = MAonSeries(EMA2, ma_period, ma_method='EMA')
     return (3*EMA-3*EMA2+EMA3).shift(ma_shift)
 
+# iMomentum()関数
+def iMomentum(df, mom_period, applied_price='Close'):
+    price = df[applied_price]
+    shift = price.shift(mom_period)
+    return price/shift*100
+    
+# iRSI()関数
+def iRSI(df, ma_period, applied_price='Close'):
+    diff = df[applied_price].diff()
+    positive = MAonSeries(diff.clip_lower(0), ma_period, 'SMMA')
+    negative = MAonSeries(diff.clip_upper(0), ma_period, 'SMMA')
+    return 100-100/(1-positive/negative)
+    
+# iStdDev()関数
+def iStdDev(df, ma_period, ma_shift=0, applied_price='Close'):
+    return df[applied_price].rolling(ma_period).std(ddof=0).shift(ma_shift)
+
 # 各関数のテスト
 if __name__ == '__main__':
 
@@ -77,6 +94,9 @@ if __name__ == '__main__':
     #x = iMA(ohlc, 14, ma_shift=0, ma_method='EMA', applied_price='Open')
     #x = iATR(ohlc, 14)
     #x = iDEMA(ohlc, 14, ma_shift=0, applied_price='Close')
-    x = iTEMA(ohlc, 14, ma_shift=0, applied_price='Close')
+    #x = iTEMA(ohlc, 14, ma_shift=0, applied_price='Close')
+    #x = iMomentum(ohlc, 14)
+    #x = iRSI(ohlc, 14)
+    #x = iStdDev(ohlc_ext, 14, ma_shift=3, applied_price='Weighted')
 
     dif = ohlc['Ind']-x
