@@ -113,6 +113,43 @@ def iCCI(df, ma_period, applied_price='Typical'):
     D *= 0.015/ma_period
     return M/D
 
+# iDeMarker()関数
+def iDeMarker(df, ma_period):
+    DeMax = df['High'].diff().clip_lower(0)
+    DeMin = -df['Low'].diff().clip_upper(0)
+    SDeMax = MAonSeries(DeMax, ma_period, 'SMA')
+    SDeMin = MAonSeries(DeMin, ma_period, 'SMA')
+    return SDeMax/(SDeMax+SDeMin)
+
+# iEnvelopes()関数
+def iEnvelopes(df, ma_period, deviation, ma_shift=0, ma_method='SMA', applied_price='Close'):
+    price = df[applied_price]
+    MA = MAonSeries(price, ma_period, ma_method).shift(ma_shift)
+    Upper = MA*(1+deviation/100)
+    Lower = MA*(1-deviation/100)
+    return pd.DataFrame({'Upper': Upper, 'Lower': Lower},
+                        columns=['Upper', 'Lower'])
+
+# iMACD()関数
+def iMACD(df, fast_period, slow_period, signal_period, applied_price='Close'):
+    price = df[applied_price]
+    Main = MAonSeries(price, fast_period, 'EMA') - MAonSeries(price, slow_period, 'EMA')
+    Signal = MAonSeries(Main, signal_period, 'SMA')
+    return pd.DataFrame({'Main': Main, 'Signal': Signal},
+                        columns=['Main', 'Signal'])
+
+# iOsMA()関数
+def iOsMA(df, fast_period, slow_period, signal_period, applied_price='Close'):
+    MACD = iMACD(df, fast_period, slow_period, signal_period, applied_price)
+    return MACD['Main'] - MACD['Signal']
+
+# iTriX()関数
+def iTriX(df, ma_period, applied_price='Close'):
+    EMA1 = MAonSeries(df[applied_price], ma_period, 'EMA')
+    EMA2 = MAonSeries(EMA1, ma_period, 'EMA')
+    EMA3 = MAonSeries(EMA2, ma_period, 'EMA')
+    return EMA3.diff()/EMA3.shift()
+
 # 各関数のテスト
 if __name__ == '__main__':
 
@@ -131,6 +168,13 @@ if __name__ == '__main__':
     #x = iAC(ohlc_ext)
     #x = iBearsPower(ohlc_ext, 13)
     #x = iBullsPower(ohlc_ext, 13)
-    x = iCCI(ohlc_ext, 14)
+    #x = iCCI(ohlc_ext, 14)
+    #x = iDeMarker(ohlc_ext, 14)
+    #x = iEnvelopes(ohlc_ext, 10, 1)
+    #x = iMACD(ohlc_ext, 12, 26, 9)
+    #x = iOsMA(ohlc_ext, 12, 26, 9)
+    x = iTriX(ohlc_ext, 14)
 
-    dif = ohlc['Ind']-x
+    diff = ohlc['Ind0'] - x
+    #diff0 = ohlc['Ind0'] - x['Main']
+    #diff1 = ohlc['Ind1'] - x['Signal']
