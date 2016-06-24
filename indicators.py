@@ -84,6 +84,35 @@ def iRSI(df, ma_period, applied_price='Close'):
 def iStdDev(df, ma_period, ma_shift=0, applied_price='Close'):
     return df[applied_price].rolling(ma_period).std(ddof=0).shift(ma_shift)
 
+# iAO()関数
+def iAO(df):
+    return MAonSeries(df['Median'], 5, 'SMA') - MAonSeries(df['Median'], 34, 'SMA')
+
+# iAC()関数
+def iAC(df):
+    AO = iAO(df)
+    return AO - MAonSeries(AO, 5, 'SMA')
+
+# iBearsPower()関数
+def iBearsPower(df, ma_period):
+    return df['Low'] - MAonSeries(df['Close'], ma_period, 'EMA')
+
+# iBullsPower()関数
+def iBullsPower(df, ma_period):
+    return df['High'] - MAonSeries(df['Close'], ma_period, 'EMA')
+
+# iCCI()関数
+def iCCI(df, ma_period, applied_price='Typical'):
+    price = df[applied_price]
+    SP = MAonSeries(price, ma_period, 'SMA')
+    M = price - SP
+    D = pd.Series(0.0, index=df.index)
+    for i in range(len(D)):
+        for j in range(ma_period):
+            D[i] += np.abs(price[i-j] - SP[i])
+    D *= 0.015/ma_period
+    return M/D
+
 # 各関数のテスト
 if __name__ == '__main__':
 
@@ -98,5 +127,10 @@ if __name__ == '__main__':
     #x = iMomentum(ohlc, 14)
     #x = iRSI(ohlc, 14)
     #x = iStdDev(ohlc_ext, 14, ma_shift=3, applied_price='Weighted')
+    #x = iAO(ohlc_ext)
+    #x = iAC(ohlc_ext)
+    #x = iBearsPower(ohlc_ext, 13)
+    #x = iBullsPower(ohlc_ext, 13)
+    x = iCCI(ohlc_ext, 14)
 
     dif = ohlc['Ind']-x
