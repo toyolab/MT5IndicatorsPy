@@ -21,7 +21,7 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 * [iBearsPower()](https://www.mql5.com/ja/docs/indicators/ibearspower) - [ベアパワー](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/bears)
 *    iBands
 * [iBullsPower()](https://www.mql5.com/ja/docs/indicators/ibullspower) - [ブルパワー](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/bulls)
-* [iCCI(https://www.mql5.com/ja/docs/indicators/icci)] - [商品チャンネル指数](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/cci)
+* [iCCI()](https://www.mql5.com/ja/docs/indicators/icci) - [商品チャンネル指数](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/cci)
 *    iChaikin not implemented, requires volume
 *    iCustom not implemented
 * [iDEMA()](https://www.mql5.com/ja/docs/indicators/idema) - [2重指数移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/dema)
