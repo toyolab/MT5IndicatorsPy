@@ -1,7 +1,7 @@
 # MT5IndicatorsPy
 MT5 compatible technical indicator functions in Python
 
-MetaTrader5のテクニカル指標関数をPythonで記述したものです。関数の仕様やテクニカル指標の説明については、テクニカル指標関数一覧を参照してください。
+MetaTrader5のテクニカル指標関数をPythonで記述したものです。関数の仕様やテクニカル指標の説明については、テクニカル指標関数一覧を参照してください。`OutputRates.mq5`は、MetaTrader5のスクリプトで各関数のテストデータを出力します。
 
 すべての関数に共通なのは、`symbol`と`period`の二つのパラメータが`DataFrame`クラスの`df`というパラメータに置き換わったところです。`df`は、`'Open','High','Low','Close','Median','Typical','Weighted'`というラベルの付いた`Series`クラスの時系列データを含みます。
 
@@ -26,18 +26,19 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 *    iCustom not implemented
 * [iDEMA()](https://www.mql5.com/ja/docs/indicators/idema) - [2重指数移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/dema)
 * [iDeMarker()](https://www.mql5.com/ja/docs/indicators/idemarker) - [デマーカー](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/demarker)
-* [iEnvelopes()](https://www.mql5.com/ja/docs/indicators/ienvelopes) - [エンベローブ](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/envelopes)
+* [iEnvelopes()](https://www.mql5.com/ja/docs/indicators/ienvelopes) - [エンベローブ](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/envelopes) #`'Upper','Lower'`
 *    iForce not implemented, requires volume
 *    iFractals not implemented
 *    iFrAMA
 *    iGator
+* iHLBand() - HLバンド #not included in MQL5
 *    iIchimoku not implemented
 *    iBWMFI not implemented, requires volume
 * [iMomentum()](https://www.mql5.com/ja/docs/indicators/imomentum) - [モメンタム](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/momentum)
 *    iMFI not implemented, requires volume
 * [iMA()](https://www.mql5.com/ja/docs/indicators/ima) - [移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/ma)
 * [iOsMA()](https://www.mql5.com/ja/docs/indicators/iosma) - [移動平均オシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/mao)
-* [iMACD()](https://www.mql5.com/ja/docs/indicators/imacd) - [MACD](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/macd)
+* [iMACD()](https://www.mql5.com/ja/docs/indicators/imacd) - [MACD](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/macd) #`'Main','Signal'`
 *    iOBV not implemented, requires volume
 *    iSAR
 * [iRSI()](https://www.mql5.com/ja/docs/indicators/irsi) - [RSI](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/rsi)
