@@ -15,7 +15,7 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 *    iADX
 *    iADXWilder
 *    iAlligator
-*    iAMA
+* [iAMA()](https://www.mql5.com/ja/docs/indicators/iama) - [適応型移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/ama)
 * [iAO()](https://www.mql5.com/ja/docs/indicators/iao) - [オーサムオシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/bw_indicators/awesome)
 * [iATR()](https://www.mql5.com/ja/docs/indicators/iatr) - [ATR](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/atr) #`ma_method`追加
 * [iBearsPower()](https://www.mql5.com/ja/docs/indicators/ibearspower) - [ベアパワー](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/bears)
@@ -29,7 +29,7 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 * [iEnvelopes()](https://www.mql5.com/ja/docs/indicators/ienvelopes) - [エンベローブ](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/envelopes) #`'Upper','Lower'`
 *    iForce not implemented, requires volume
 *    iFractals not implemented
-*    iFrAMA
+* [iFrAMA()](https://www.mql5.com/ja/docs/indicators/iframa) - [フラクタル適応型移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/fama)
 *    iGator
 * iHLBand() - HLバンド #not included in MQL5
 *    iIchimoku not implemented
@@ -42,11 +42,11 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 *    iOBV not implemented, requires volume
 *    iSAR
 * [iRSI()](https://www.mql5.com/ja/docs/indicators/irsi) - [RSI](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/rsi)
-*    iRVI
+* [iRVI()](https://www.mql5.com/ja/docs/indicators/irvi) - [相対活力指数](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/rvi)
 * [iStdDev()](https://www.mql5.com/ja/docs/indicators/istddev) - [標準偏差](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/sd) #`ma_method`削除
 *    iStochastic
 * [iTEMA()](https://www.mql5.com/ja/docs/indicators/itema) - [3重指数移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/tema)
 * [iTriX()](https://www.mql5.com/ja/docs/indicators/itrix) - [3重指数移動平均オシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/tea)
-*    iWPR
+* [iWPR()](https://www.mql5.com/ja/docs/indicators/iwpr) - [ウィリアムパーセントレンジ](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/wpr)
 *    iVIDyA
 *    iVolumes not implemented, requires volume

@@ -150,6 +150,52 @@ def iTriX(df, ma_period, applied_price='Close'):
     EMA3 = MAonSeries(EMA2, ma_period, 'EMA')
     return EMA3.diff()/EMA3.shift()
 
+# iAMA()関数
+def iAMA(df, ma_period, fast_period, slow_period, ma_shift=0, applied_price='Close'):
+    price = df[applied_price]
+    Signal = price.diff(ma_period).abs()
+    Noise = price.diff().abs().rolling(ma_period).sum()
+    ER = Signal/Noise
+    FastSC = 2/(fast_period+1)
+    SlowSC = 2/(slow_period+1)
+    SSC = ER*(FastSC-SlowSC)+SlowSC
+    AMA = price
+    for i in range(ma_period, len(AMA)):
+        AMA[i] = AMA[i-1] + SSC[i]*SSC[i]*(price[i]-AMA[i-1])
+    return AMA.shift(ma_shift)
+
+# iFrAMA()関数
+def iFrAMA(df, ma_period, ma_shift=0, applied_price='Close'):
+    price = df[applied_price]
+    H = df['High']
+    L = df['Low']
+    N1 = (H.rolling(ma_period).max()-L.rolling(ma_period).min())/ma_period 
+    N2 = (H.shift(ma_period).rolling(ma_period).max()-L.shift(ma_period).rolling(ma_period).min())/ma_period 
+    N3 = (H.rolling(2*ma_period).max()-L.rolling(2*ma_period).min())/(2*ma_period)
+    D = (np.log(N1+N2)-np.log(N3))/np.log(2)
+    A = np.exp(-4.6*(D-1))
+    FRAMA = price
+    for i in range(2*ma_period, len(FRAMA)):
+        FRAMA[i] = FRAMA[i-1] + A[i]*(price[i]-FRAMA[i-1])
+    return FRAMA.shift(ma_shift)
+
+# iRVI()関数
+def iRVI(df, ma_period):
+    CO = df['Close']-df['Open']
+    HL = df['High']-df['Low']
+    MA = CO+2*(CO.shift(1)+CO.shift(2))+CO.shift(3)
+    RA = HL+2*(HL.shift(1)+HL.shift(2))+HL.shift(3)
+    Main = MA.rolling(ma_period).sum()/RA.rolling(ma_period).sum()
+    Signal = (Main+2*(Main.shift(1)+Main.shift(2))+Main.shift(3))/6
+    return pd.DataFrame({'Main': Main, 'Signal': Signal},
+                        columns=['Main', 'Signal'])
+
+# iWPR()関数
+def iWPR(df, period):
+    Max = df['High'].rolling(period).max()
+    Min = df['Low'].rolling(period).min()
+    return (df['Close']-Max)/(Max-Min)*100
+
 # 各関数のテスト
 if __name__ == '__main__':
 
@@ -173,7 +219,11 @@ if __name__ == '__main__':
     #x = iEnvelopes(ohlc_ext, 10, 1)
     #x = iMACD(ohlc_ext, 12, 26, 9)
     #x = iOsMA(ohlc_ext, 12, 26, 9)
-    x = iTriX(ohlc_ext, 14)
+    #x = iTriX(ohlc_ext, 14)
+    #x = iAMA(ohlc_ext, 15, 2, 30)
+    #x = iFrAMA(ohlc_ext, 14)
+    #x = iRVI(ohlc_ext, 10)
+    x = iWPR(ohlc_ext, 14)
 
     diff = ohlc['Ind0'] - x
     #diff0 = ohlc['Ind0'] - x['Main']
