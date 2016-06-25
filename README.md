@@ -11,11 +11,13 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 
 `price_field`には、`'LOWHIGH','CLOSECLOSE'`のいずれかを代入します。
 
+出力が一つの関数は`Series`クラスの時系列データ、二つ以上の関数は`DataFrame`クラスの時系列データで、出力の種類は指定したラベルで区別します。
+
 ## テクニカル指標関数一覧
 * [iAC()](https://www.mql5.com/ja/docs/indicators/iac) - [ACオシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/bw_indicators/ao)
 *    iAD not implemented, requires volume
-*    iADX
-*    iADXWilder
+* [iADX()](https://www.mql5.com/ja/docs/indicators/iadx) - [ADX](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/admi) #`'Main','PlusDI','MinusDI'`
+* [iADXWilder()](https://www.mql5.com/ja/docs/indicators/iadxwilder) - [ワイルダーのADX](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/admiw) #`'Main','PlusDI','MinusDI'`
 * [iAlligator()](https://www.mql5.com/ja/docs/indicators/ialligator) - [アリゲーター](http://www.metatrader5.com/ja/terminal/help/indicators/bw_indicators/alligator) #`'Jaw','Teeth','Lips'`
 * [iAMA()](https://www.mql5.com/ja/docs/indicators/iama) - [適応型移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/ama)
 * [iAO()](https://www.mql5.com/ja/docs/indicators/iao) - [オーサムオシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/bw_indicators/awesome)
@@ -42,7 +44,7 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 * [iOsMA()](https://www.mql5.com/ja/docs/indicators/iosma) - [移動平均オシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/mao)
 * [iMACD()](https://www.mql5.com/ja/docs/indicators/imacd) - [MACD](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/macd) #`'Main','Signal'`
 *    iOBV not implemented, requires volume
-*    iSAR
+* [iSAR()](https://www.mql5.com/ja/docs/indicators/isar) - [パラボリック SAR](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/psar)
 * [iRSI()](https://www.mql5.com/ja/docs/indicators/irsi) - [RSI](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/rsi)
 * [iRVI()](https://www.mql5.com/ja/docs/indicators/irvi) - [相対活力指数](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/rvi) #`'Main','Signal'`
 * [iStdDev()](https://www.mql5.com/ja/docs/indicators/istddev) - [標準偏差](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/sd) #`ma_method`削除

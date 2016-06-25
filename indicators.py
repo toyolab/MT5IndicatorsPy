@@ -159,7 +159,7 @@ def iAMA(df, ma_period, fast_period, slow_period, ma_shift=0, applied_price='Clo
     FastSC = 2/(fast_period+1)
     SlowSC = 2/(slow_period+1)
     SSC = ER*(FastSC-SlowSC)+SlowSC
-    AMA = price
+    AMA = price.copy()
     for i in range(ma_period, len(AMA)):
         AMA[i] = AMA[i-1] + SSC[i]*SSC[i]*(price[i]-AMA[i-1])
     return AMA.shift(ma_shift)
@@ -174,7 +174,7 @@ def iFrAMA(df, ma_period, ma_shift=0, applied_price='Close'):
     N3 = (H.rolling(2*ma_period).max()-L.rolling(2*ma_period).min())/(2*ma_period)
     D = (np.log(N1+N2)-np.log(N3))/np.log(2)
     A = np.exp(-4.6*(D-1))
-    FRAMA = price
+    FRAMA = price.copy()
     for i in range(2*ma_period, len(FRAMA)):
         FRAMA[i] = FRAMA[i-1] + A[i]*(price[i]-FRAMA[i-1])
     return FRAMA.shift(ma_shift)
@@ -202,7 +202,7 @@ def iVIDyA(df, cmo_period, ma_period, ma_shift=0, applied_price='Close'):
     UpSum = price.diff().clip_lower(0).rolling(cmo_period).sum()
     DnSum = -price.diff().clip_upper(0).rolling(cmo_period).sum()
     CMO = (UpSum-DnSum)/(UpSum+DnSum)
-    VIDYA = price
+    VIDYA = price.copy()
     for i in range(cmo_period, len(VIDYA)):
         VIDYA[i] = VIDYA[i-1] + 2/(ma_period+1)*np.abs(CMO[i])*(price[i]-VIDYA[i-1])
     return VIDYA.shift(ma_shift)
@@ -265,6 +265,65 @@ def iGator(df, jaw_period, jaw_shift, teeth_period, teeth_shift,
     return pd.DataFrame({'Upper': Upper, 'Lower': Lower},
                         columns=['Upper', 'Lower'])
 
+# iADX()関数
+def iADX(df, adx_period):
+    dP = df['High'].diff().clip_lower(0)
+    dM = -df['Low'].diff().clip_upper(0)
+    for i in range(len(dP)):
+        if dP[i] > dM[i]: dM[i] = 0
+        if dP[i] < dM[i]: dP[i] = 0
+    TR = pd.DataFrame({'H':df['High'], 'C':df['Close'].shift()}).max(1)\
+       - pd.DataFrame({'L':df['Low'], 'C':df['Close'].shift()}).min(1)
+    PlusDI = 100*MAonSeries(dP/TR, adx_period, 'EMA')
+    MinusDI = 100*MAonSeries(dM/TR, adx_period, 'EMA')
+    Main = MAonSeries(100*(PlusDI-MinusDI).abs()/(PlusDI+MinusDI), adx_period, 'EMA')
+    return pd.DataFrame({'Main': Main, 'PlusDI': PlusDI, 'MinusDI': MinusDI},
+                        columns=['Main', 'PlusDI', 'MinusDI'])
+
+# iADXWilder()関数
+def iADXWilder(df, adx_period):
+    dP = df['High'].diff().clip_lower(0)
+    dM = -df['Low'].diff().clip_upper(0)
+    for i in range(len(dP)):
+        if dP[i] > dM[i]: dM[i] = 0
+        if dP[i] < dM[i]: dP[i] = 0
+    ATR = iATR(df, adx_period, 'SMMA')
+    PlusDI = 100*MAonSeries(dP, adx_period, 'SMMA')/ATR
+    MinusDI = 100*MAonSeries(dM, adx_period, 'SMMA')/ATR
+    Main = MAonSeries(100*(PlusDI-MinusDI).abs()/(PlusDI+MinusDI), adx_period, 'SMMA')
+    return pd.DataFrame({'Main': Main, 'PlusDI': PlusDI, 'MinusDI': MinusDI},
+                        columns=['Main', 'PlusDI', 'MinusDI'])
+
+# iSAR()関数
+def iSAR(df, step, maximum):
+    last_period = 0
+    dir_long = True
+    ACC = step
+    SAR = df['Close'].copy()
+    for i in range(1,len(df)):
+        last_period += 1    
+        if dir_long == True:
+            Ep1 = df['High'][i-last_period:i].max()
+            SAR[i] = SAR[i-1]+ACC*(Ep1-SAR[i-1])
+            Ep0 = max([Ep1, df['High'][i]])
+            if Ep0 > Ep1 and ACC+step <= maximum: ACC+=step
+            if SAR[i] > df['Low'][i]:
+                dir_long = False
+                SAR[i] = Ep0
+                last_period = 0
+                ACC = step
+        else:
+            Ep1 = df['Low'][i-last_period:i].min()
+            SAR[i] = SAR[i-1]+ACC*(Ep1-SAR[i-1])
+            Ep0 = min([Ep1, df['Low'][i]])
+            if Ep0 < Ep1 and ACC+step <= maximum: ACC+=step
+            if SAR[i] < df['High'][i]:
+                dir_long = True
+                SAR[i] = Ep0
+                last_period = 0
+                ACC = step
+    return SAR
+
 # 各関数のテスト
 if __name__ == '__main__':
 
@@ -298,9 +357,12 @@ if __name__ == '__main__':
     #x = iStochastic(ohlc_ext, 10, 3, 5, ma_method='LWMA', price_field='CLOSECLOSE')
     #x = iHLBand(ohlc, 20)
     #x = iAlligator(ohlc_ext, 13, 8, 8, 5, 5, 3)
-    x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
+    #x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
+    #x = iADX(ohlc_ext, 14)
+    #x = iADXWilder(ohlc_ext, 14)
+    x = iSAR(ohlc_ext, 0.02, 0.2)
 
-    #diff = ohlc['Ind0'] - x
-    diff0 = ohlc['Ind0'] - x['Upper']
-    #diff1 = ohlc['Ind1'] - x['Teeth']
-    diff2 = ohlc['Ind2'] - x['Lower']
+    diff = ohlc['Ind0'] - x
+    #diff0 = ohlc['Ind0'] - x['Main']
+    #diff1 = ohlc['Ind1'] - x['PlusDI']
+    #diff2 = ohlc['Ind2'] - x['MinusDI']
