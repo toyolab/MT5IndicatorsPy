@@ -42,7 +42,7 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 *    iOBV not implemented, requires volume
 *    iSAR
 * [iRSI()](https://www.mql5.com/ja/docs/indicators/irsi) - [RSI](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/rsi)
-* [iRVI()](https://www.mql5.com/ja/docs/indicators/irvi) - [相対活力指数](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/rvi)
+* [iRVI()](https://www.mql5.com/ja/docs/indicators/irvi) - [相対活力指数](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/rvi) #`'Main','Signal'`
 * [iStdDev()](https://www.mql5.com/ja/docs/indicators/istddev) - [標準偏差](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/sd) #`ma_method`削除
 *    iStochastic
 * [iTEMA()](https://www.mql5.com/ja/docs/indicators/itema) - [3重指数移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/tema)
