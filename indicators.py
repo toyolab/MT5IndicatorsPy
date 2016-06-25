@@ -196,6 +196,75 @@ def iWPR(df, period):
     Min = df['Low'].rolling(period).min()
     return (df['Close']-Max)/(Max-Min)*100
 
+# iVIDyA()関数
+def iVIDyA(df, cmo_period, ma_period, ma_shift=0, applied_price='Close'):
+    price = df[applied_price]
+    UpSum = price.diff().clip_lower(0).rolling(cmo_period).sum()
+    DnSum = -price.diff().clip_upper(0).rolling(cmo_period).sum()
+    CMO = (UpSum-DnSum)/(UpSum+DnSum)
+    VIDYA = price
+    for i in range(cmo_period, len(VIDYA)):
+        VIDYA[i] = VIDYA[i-1] + 2/(ma_period+1)*np.abs(CMO[i])*(price[i]-VIDYA[i-1])
+    return VIDYA.shift(ma_shift)
+
+# iBands()関数
+def iBands(df, bands_period, deviation, bands_shift=0, applied_price='Close'):
+    price = df[applied_price].shift(bands_shift)
+    Base = price.rolling(bands_period).mean()
+    sigma = price.rolling(bands_period).std(ddof=0)
+    Upper = Base+sigma*deviation
+    Lower = Base-sigma*deviation
+    return pd.DataFrame({'Base': Base, 'Upper': Upper, 'Lower': Lower},
+                        columns=['Base', 'Upper', 'Lower'])
+
+# iStochastic()関数
+def iStochastic(df, Kperiod, Dperiod, slowing, ma_method='SMA', price_field='LOWHIGH'):
+    if price_field == 'LOWHIGH':
+        high = df['High']
+        low = df['Low']
+    elif price_field == 'CLOSECLOSE':
+        high = low = df['Close']
+    Hline = high.rolling(Kperiod).max()
+    Lline = low.rolling(Kperiod).min()
+    sumlow = (df['Close']-Lline).rolling(slowing).sum()
+    sumhigh = (Hline-Lline).rolling(slowing).sum()
+    Main = sumlow/sumhigh*100
+    Signal = MAonSeries(Main, Dperiod, ma_method)
+    return pd.DataFrame({'Main': Main, 'Signal': Signal},
+                        columns=['Main', 'Signal'])
+
+# iHLBand()関数
+def iHLBand(df, band_period, band_shift=0, price_field='LOWHIGH'):
+    if price_field == 'LOWHIGH':
+        high = df['High']
+        low = df['Low']
+    elif price_field == 'CLOSECLOSE':
+        high = low = df['Close']
+    Upper = high.rolling(band_period).max().shift(band_shift)
+    Lower = low.rolling(band_period).min().shift(band_shift)
+    return pd.DataFrame({'Upper': Upper, 'Lower': Lower},
+                        columns=['Upper', 'Lower'])
+
+# iAlligator()関数
+def iAlligator(df, jaw_period, jaw_shift, teeth_period, teeth_shift,
+               lips_period, lips_shift, ma_method='SMMA', applied_price='Median'):
+    price = df[applied_price]
+    Jaw = MAonSeries(price, jaw_period, ma_method).shift(jaw_shift)
+    Teeth = MAonSeries(price, teeth_period, ma_method).shift(teeth_shift)
+    Lips = MAonSeries(price, lips_period, ma_method).shift(lips_shift)
+    return pd.DataFrame({'Jaw': Jaw, 'Teeth': Teeth, 'Lips': Lips},
+                        columns=['Jaw', 'Teeth', 'Lips'])
+
+# iGator()関数
+def iGator(df, jaw_period, jaw_shift, teeth_period, teeth_shift,
+               lips_period, lips_shift, ma_method='SMMA', applied_price='Median'):
+    AG = iAlligator(df, jaw_period, jaw_shift, teeth_period, teeth_shift,
+                    lips_period, lips_shift, ma_method, applied_price)
+    Upper = (AG['Jaw']-AG['Teeth']).abs()
+    Lower = -(AG['Teeth']-AG['Lips']).abs()
+    return pd.DataFrame({'Upper': Upper, 'Lower': Lower},
+                        columns=['Upper', 'Lower'])
+
 # 各関数のテスト
 if __name__ == '__main__':
 
@@ -223,8 +292,15 @@ if __name__ == '__main__':
     #x = iAMA(ohlc_ext, 15, 2, 30)
     #x = iFrAMA(ohlc_ext, 14)
     #x = iRVI(ohlc_ext, 10)
-    x = iWPR(ohlc_ext, 14)
+    #x = iWPR(ohlc_ext, 14)
+    #x = iVIDyA(ohlc_ext, 15, 12)
+    #x = iBands(ohlc_ext, 20, 2, bands_shift=5)
+    #x = iStochastic(ohlc_ext, 10, 3, 5, ma_method='LWMA', price_field='CLOSECLOSE')
+    #x = iHLBand(ohlc, 20)
+    #x = iAlligator(ohlc_ext, 13, 8, 8, 5, 5, 3)
+    x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
 
-    diff = ohlc['Ind0'] - x
-    #diff0 = ohlc['Ind0'] - x['Main']
-    #diff1 = ohlc['Ind1'] - x['Signal']
+    #diff = ohlc['Ind0'] - x
+    diff0 = ohlc['Ind0'] - x['Upper']
+    #diff1 = ohlc['Ind1'] - x['Teeth']
+    diff2 = ohlc['Ind2'] - x['Lower']

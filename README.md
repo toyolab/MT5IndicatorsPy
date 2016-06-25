@@ -9,17 +9,19 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 
 `applied_price`には、`'Close','Open','High','Low','Median','Typical','Weighted'`のいずれかを代入します。
 
+`price_field`には、`'LOWHIGH','CLOSECLOSE'`のいずれかを代入します。
+
 ## テクニカル指標関数一覧
 * [iAC()](https://www.mql5.com/ja/docs/indicators/iac) - [ACオシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/bw_indicators/ao)
 *    iAD not implemented, requires volume
 *    iADX
 *    iADXWilder
-*    iAlligator
+* [iAlligator()](https://www.mql5.com/ja/docs/indicators/ialligator) - [アリゲーター](http://www.metatrader5.com/ja/terminal/help/indicators/bw_indicators/alligator) #`'Jaw','Teeth','Lips'`
 * [iAMA()](https://www.mql5.com/ja/docs/indicators/iama) - [適応型移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/ama)
 * [iAO()](https://www.mql5.com/ja/docs/indicators/iao) - [オーサムオシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/bw_indicators/awesome)
 * [iATR()](https://www.mql5.com/ja/docs/indicators/iatr) - [ATR](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/atr) #`ma_method`追加
 * [iBearsPower()](https://www.mql5.com/ja/docs/indicators/ibearspower) - [ベアパワー](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/bears)
-*    iBands
+* [iBands()](https://www.mql5.com/ja/docs/indicators/ibands) - [ボリンジャーバンド](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/bb) #`'Base','Upper','Lower'`
 * [iBullsPower()](https://www.mql5.com/ja/docs/indicators/ibullspower) - [ブルパワー](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/bulls)
 * [iCCI()](https://www.mql5.com/ja/docs/indicators/icci) - [CCI](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/cci)
 *    iChaikin not implemented, requires volume
@@ -30,8 +32,8 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 *    iForce not implemented, requires volume
 *    iFractals not implemented
 * [iFrAMA()](https://www.mql5.com/ja/docs/indicators/iframa) - [フラクタル適応型移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/fama)
-*    iGator
-* iHLBand() - HLバンド #not included in MQL5
+* [iGator()](https://www.mql5.com/ja/docs/indicators/igator) - [ゲーターオシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/bw_indicators/go) #`'Upper','Lower'`
+* iHLBand() not included in MQL5 - HLバンド #`'Upper','Lower'`
 *    iIchimoku not implemented
 *    iBWMFI not implemented, requires volume
 * [iMomentum()](https://www.mql5.com/ja/docs/indicators/imomentum) - [モメンタム](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/momentum)
@@ -44,9 +46,9 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 * [iRSI()](https://www.mql5.com/ja/docs/indicators/irsi) - [RSI](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/rsi)
 * [iRVI()](https://www.mql5.com/ja/docs/indicators/irvi) - [相対活力指数](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/rvi) #`'Main','Signal'`
 * [iStdDev()](https://www.mql5.com/ja/docs/indicators/istddev) - [標準偏差](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/sd) #`ma_method`削除
-*    iStochastic
+* [iStochastic()](https://www.mql5.com/ja/docs/indicators/istochastic) - [ストキャスティックス](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/so) #`'Main','Signal'`
 * [iTEMA()](https://www.mql5.com/ja/docs/indicators/itema) - [3重指数移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/tema)
 * [iTriX()](https://www.mql5.com/ja/docs/indicators/itrix) - [3重指数移動平均オシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/tea)
 * [iWPR()](https://www.mql5.com/ja/docs/indicators/iwpr) - [ウィリアムパーセントレンジ](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/wpr)
-*    iVIDyA
+* [iVIDyA()](https://www.mql5.com/ja/docs/indicators/ividya) - [可変インデックス動的平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/vida)
 *    iVolumes not implemented, requires volume
