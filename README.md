@@ -1,9 +1,9 @@
 # MT5IndicatorsPy
 MT5 compatible technical indicator functions in Python
 
-MetaTrader5のテクニカル指標関数をPythonで記述したものです。関数の仕様やテクニカル指標の説明については、テクニカル指標関数一覧を参照してください。`OutputRates.mq5`は、MetaTrader5のスクリプトで各関数のテストデータを出力します。
+MetaTrader5のテクニカル指標関数をPythonで記述したものです。関数の仕様やテクニカル指標の説明については、テクニカル指標関数一覧を参照してください。`OutputRates.mq5`は、各関数のテストデータを出力するMetaTrader5のスクリプトです。
 
-すべての関数に共通なのは、`symbol`と`period`の二つのパラメータが`DataFrame`クラスの`df`というパラメータに置き換わったところです。`df`は、`'Open','High','Low','Close','Median','Typical','Weighted'`というラベルの付いた`Series`クラスの時系列データを含みます。
+すべての関数に共通なのは、`symbol`と`period`の二つのパラメータが`DataFrame`クラスの`df`というパラメータに置き換わったところです。`df`は、`'Open','High','Low','Close','Median','Typical','Weighted'`というラベルの付いた`Series`クラスの時系列データから構成されます。
 
 `ma_method`には、`'SMA','EMA','SMMA','LWMA'`のいずれかを代入します。
 
@@ -11,7 +11,7 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 
 `price_field`には、`'LOWHIGH','CLOSECLOSE'`のいずれかを代入します。
 
-出力が一つの関数は`Series`クラスの時系列データ、二つ以上の関数は`DataFrame`クラスの時系列データで、出力の種類は指定したラベルで区別します。
+出力が一つの関数は`Series`クラスの時系列データ、二つ以上の関数は`DataFrame`クラスの時系列データとして出力され、出力の種類は指定したラベルで区別します。
 
 ## テクニカル指標関数一覧
 * [iAC()](https://www.mql5.com/ja/docs/indicators/iac) - [ACオシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/bw_indicators/ao)
