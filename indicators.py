@@ -1,6 +1,7 @@
 # coding: utf-8
 import numpy as np
 import pandas as pd
+from scipy.signal import lfilter
 
 # dfのデータからtfで指定するタイムフレームの4本足データを作成する関数
 def TF_ohlc(df, tf):
@@ -34,15 +35,10 @@ def MAonSeries(s, ma_period, ma_method):
     elif ma_method == 'SMMA':
         return s.ewm(alpha=1/ma_period).mean()
     elif ma_method == 'LWMA':
-        y = pd.Series(0.0, index=s.index)
-        for i in range(len(y)):
-            if i<ma_period-1: y[i] = 'NaN'
-            else:
-                y[i] = 0
-                for j in range(ma_period):
-                    y[i] += s[i-j]*(ma_period-j)
-                y[i] /= ma_period*(ma_period+1)/2
-        return y
+        h = np.arange(ma_period, 0, -1)*2/ma_period/(ma_period+1)
+        y = lfilter(h, 1, s)
+        y[:ma_period-1] = 'NaN'
+        return pd.Series(y, index=s.index)
     
 # iMA()関数
 def iMA(df, ma_period, ma_shift=0, ma_method='SMA', applied_price='Close'):
@@ -331,7 +327,7 @@ if __name__ == '__main__':
     ohlc = pd.read_csv(file, index_col='Time', parse_dates=True)
     ohlc_ext = ext_ohlc(ohlc)
 
-    #x = iMA(ohlc, 14, ma_shift=0, ma_method='EMA', applied_price='Open')
+    x = iMA(ohlc, 14, ma_shift=0, ma_method='LWMA', applied_price='Close')
     #x = iATR(ohlc, 14)
     #x = iDEMA(ohlc, 14, ma_shift=0, applied_price='Close')
     #x = iTEMA(ohlc, 14, ma_shift=0, applied_price='Close')
@@ -360,7 +356,7 @@ if __name__ == '__main__':
     #x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iADX(ohlc_ext, 14)
     #x = iADXWilder(ohlc_ext, 14)
-    x = iSAR(ohlc_ext, 0.02, 0.2)
+    #x = iSAR(ohlc_ext, 0.02, 0.2)
 
     diff = ohlc['Ind0'] - x
     #diff0 = ohlc['Ind0'] - x['Main']
