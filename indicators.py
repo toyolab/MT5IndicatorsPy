@@ -28,8 +28,11 @@ def ext_ohlc(df):
 
 # 共通移動平均
 def MAonSeries(s, ma_period, ma_method):
-    if ma_method == 'SMA':    
-        return s.rolling(ma_period).mean()
+    if ma_method == 'SMA':
+        h = np.ones(ma_period)/ma_period
+        y = lfilter(h, 1, s)
+        y[:ma_period-1] = 'NaN'
+        return pd.Series(y, index=s.index)
     elif ma_method == 'EMA':
         return s.ewm(span=ma_period).mean()
     elif ma_method == 'SMMA':
@@ -327,7 +330,7 @@ if __name__ == '__main__':
     ohlc = pd.read_csv(file, index_col='Time', parse_dates=True)
     ohlc_ext = ext_ohlc(ohlc)
 
-    x = iMA(ohlc, 14, ma_shift=0, ma_method='LWMA', applied_price='Close')
+    x = iMA(ohlc, 14, ma_shift=0, ma_method='SMMA', applied_price='Close')
     #x = iATR(ohlc, 14)
     #x = iDEMA(ohlc, 14, ma_shift=0, applied_price='Close')
     #x = iTEMA(ohlc, 14, ma_shift=0, applied_price='Close')
