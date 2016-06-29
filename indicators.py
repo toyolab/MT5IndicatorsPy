@@ -32,16 +32,17 @@ def MAonSeries(s, ma_period, ma_method):
         h = np.ones(ma_period)/ma_period
         y = lfilter(h, 1, s)
         y[:ma_period-1] = 'NaN'
-        return pd.Series(y, index=s.index)
     elif ma_method == 'EMA':
-        return s.ewm(span=ma_period).mean()
+        alpha = 2/(ma_period+1)
+        y,zf = lfilter([alpha], [1,alpha-1], s, zi=[s[0]*(1-alpha)])
     elif ma_method == 'SMMA':
-        return s.ewm(alpha=1/ma_period).mean()
+        alpha = 1/ma_period
+        y,zf = lfilter([alpha], [1,alpha-1], s, zi=[s[0]*(1-alpha)])
     elif ma_method == 'LWMA':
         h = np.arange(ma_period, 0, -1)*2/ma_period/(ma_period+1)
         y = lfilter(h, 1, s)
         y[:ma_period-1] = 'NaN'
-        return pd.Series(y, index=s.index)
+    return pd.Series(y, index=s.index)
     
 # iMA()関数
 def iMA(df, ma_period, ma_shift=0, ma_method='SMA', applied_price='Close'):
