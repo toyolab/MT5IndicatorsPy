@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 from scipy.signal import lfilter
+from numba import jit
 
 # dfのデータからtfで指定するタイムフレームの4本足データを作成する関数
 def TF_ohlc(df, tf):
@@ -295,34 +296,37 @@ def iADXWilder(df, adx_period):
                         columns=['Main', 'PlusDI', 'MinusDI'])
 
 # iSAR()関数
+@jit
 def iSAR(df, step, maximum):
     last_period = 0
     dir_long = True
     ACC = step
-    SAR = df['Close'].copy()
-    for i in range(1,len(df)):
-        last_period += 1    
+    SAR = df['Close'].values.copy()
+    High = df['High'].values
+    Low = df['Low'].values
+    for i in range(1,len(SAR)):
+        last_period += 1
         if dir_long == True:
-            Ep1 = df['High'][i-last_period:i].max()
+            Ep1 = High[i-last_period:i].max()
             SAR[i] = SAR[i-1]+ACC*(Ep1-SAR[i-1])
-            Ep0 = max([Ep1, df['High'][i]])
+            Ep0 = max([Ep1, High[i]])
             if Ep0 > Ep1 and ACC+step <= maximum: ACC+=step
-            if SAR[i] > df['Low'][i]:
+            if SAR[i] > Low[i]:
                 dir_long = False
                 SAR[i] = Ep0
                 last_period = 0
                 ACC = step
         else:
-            Ep1 = df['Low'][i-last_period:i].min()
+            Ep1 = Low[i-last_period:i].min()
             SAR[i] = SAR[i-1]+ACC*(Ep1-SAR[i-1])
-            Ep0 = min([Ep1, df['Low'][i]])
+            Ep0 = min([Ep1, Low[i]])
             if Ep0 < Ep1 and ACC+step <= maximum: ACC+=step
-            if SAR[i] < df['High'][i]:
+            if SAR[i] < High[i]:
                 dir_long = True
                 SAR[i] = Ep0
                 last_period = 0
                 ACC = step
-    return SAR
+    return pd.Series(SAR, index=df.index)
 
 # 各関数のテスト
 if __name__ == '__main__':
@@ -331,7 +335,7 @@ if __name__ == '__main__':
     ohlc = pd.read_csv(file, index_col='Time', parse_dates=True)
     ohlc_ext = ext_ohlc(ohlc)
 
-    x = iMA(ohlc, 14, ma_shift=0, ma_method='SMMA', applied_price='Close')
+    #x = iMA(ohlc, 14, ma_shift=0, ma_method='SMMA', applied_price='Close')
     #x = iATR(ohlc, 14)
     #x = iDEMA(ohlc, 14, ma_shift=0, applied_price='Close')
     #x = iTEMA(ohlc, 14, ma_shift=0, applied_price='Close')
@@ -360,7 +364,7 @@ if __name__ == '__main__':
     #x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iADX(ohlc_ext, 14)
     #x = iADXWilder(ohlc_ext, 14)
-    #x = iSAR(ohlc_ext, 0.02, 0.2)
+    x = iSAR(ohlc_ext, 0.02, 0.2)
 
     diff = ohlc['Ind0'] - x
     #diff0 = ohlc['Ind0'] - x['Main']
