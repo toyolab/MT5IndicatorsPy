@@ -103,16 +103,17 @@ def iBullsPower(df, ma_period):
     return df['High'] - MAonSeries(df['Close'], ma_period, 'EMA')
 
 # iCCI()関数
+@jit
 def iCCI(df, ma_period, applied_price='Typical'):
-    price = df[applied_price]
-    SP = MAonSeries(price, ma_period, 'SMA')
+    SP = MAonSeries(df[applied_price], ma_period, 'SMA').values
+    price = df[applied_price].values
     M = price - SP
-    D = pd.Series(0.0, index=df.index)
+    D = np.zeros(len(M))
     for i in range(len(D)):
         for j in range(ma_period):
             D[i] += np.abs(price[i-j] - SP[i])
     D *= 0.015/ma_period
-    return M/D
+    return pd.Series(M/D, index=df.index)
 
 # iDeMarker()関数
 def iDeMarker(df, ma_period):
@@ -335,18 +336,18 @@ if __name__ == '__main__':
     ohlc = pd.read_csv(file, index_col='Time', parse_dates=True)
     ohlc_ext = ext_ohlc(ohlc)
 
-    #x = iMA(ohlc, 14, ma_shift=0, ma_method='SMMA', applied_price='Close')
-    #x = iATR(ohlc, 14)
-    #x = iDEMA(ohlc, 14, ma_shift=0, applied_price='Close')
-    #x = iTEMA(ohlc, 14, ma_shift=0, applied_price='Close')
-    #x = iMomentum(ohlc, 14)
-    #x = iRSI(ohlc, 14)
+    #x = iMA(ohlc_ext, 14, ma_method='SMMA', applied_price='Close')
+    #x = iATR(ohlc_ext, 14)
+    #x = iDEMA(ohlc_ext, 14, applied_price='Close')
+    #x = iTEMA(ohlc_ext, 14, applied_price='Close')
+    #x = iMomentum(ohlc_ext, 14)
+    #x = iRSI(ohlc_ext, 14)
     #x = iStdDev(ohlc_ext, 14, ma_shift=3, applied_price='Weighted')
     #x = iAO(ohlc_ext)
     #x = iAC(ohlc_ext)
     #x = iBearsPower(ohlc_ext, 13)
     #x = iBullsPower(ohlc_ext, 13)
-    #x = iCCI(ohlc_ext, 14)
+    x = iCCI(ohlc_ext, 14)
     #x = iDeMarker(ohlc_ext, 14)
     #x = iEnvelopes(ohlc_ext, 10, 1)
     #x = iMACD(ohlc_ext, 12, 26, 9)
@@ -364,7 +365,7 @@ if __name__ == '__main__':
     #x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iADX(ohlc_ext, 14)
     #x = iADXWilder(ohlc_ext, 14)
-    x = iSAR(ohlc_ext, 0.02, 0.2)
+    #x = iSAR(ohlc_ext, 0.02, 0.2)
 
     diff = ohlc['Ind0'] - x
     #diff0 = ohlc['Ind0'] - x['Main']
