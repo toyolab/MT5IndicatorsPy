@@ -47,7 +47,7 @@ def MAonArray(a, ma_period, ma_method):
     
 # 共通移動平均 on Series
 def MAonSeries(s, ma_period, ma_method):
-    return pd.Series(MAonArray(s, ma_period, ma_method), index=s.index)
+    return pd.Series(MAonArray(s.values, ma_period, ma_method), index=s.index)
     
 # iMA()関数
 def iMA(df, ma_period, ma_shift=0, ma_method='SMA', applied_price='Close'):
