@@ -57,13 +57,13 @@ def BacktestReport(Trade, PL):
     if Trades==0: Average = 0
     else: Average = Profit/Trades
     #プロフィットファクター
-    if GrossLoss==0: PF=100
+    if GrossLoss==0: PF=0
     else: PF = -GrossProfit/GrossLoss
     #最大ドローダウン
     Equity = (LongPL+ShortPL).cumsum()
     MDD = (Equity.cummax()-Equity).max()
     #リカバリーファクター
-    if MDD==0: RF=100
+    if MDD==0: RF=0
     else: RF = Profit/MDD
     return np.array([Profit, Trades, Average, PF, MDD, RF])
 
