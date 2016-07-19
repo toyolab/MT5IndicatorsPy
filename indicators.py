@@ -27,6 +27,10 @@ def ext_ohlc(df):
                        columns=['Median','Typical','Weighted'])
     return pd.concat([df,ext], axis=1)
 
+#シフト関数
+def shift(x, n=1):
+    return np.concatenate((np.zeros(n), x[:-n]))
+
 # 共通移動平均 on Array
 def MAonArray(a, ma_period, ma_method):
     if ma_method == 'SMA':
@@ -55,9 +59,9 @@ def iMA(df, ma_period, ma_shift=0, ma_method='SMA', applied_price='Close'):
 
 # iATR()関数
 def iATR(df, ma_period, ma_method='SMA'):
-    TR = pd.DataFrame({'H':df['High'], 'C':df['Close'].shift()}).max(1)\
-       - pd.DataFrame({'L':df['Low'], 'C':df['Close'].shift()}).min(1)
-    return MAonSeries(TR, ma_period, ma_method)
+    TR = np.max(np.vstack((df['High'].values, shift(df['Close'].values))).T, axis=1)\
+       - np.min(np.vstack((df['Low'].values, shift(df['Close'].values))).T, axis=1)
+    return pd.Series(MAonArray(TR, ma_period, ma_method), index=df.index)
     
 # iDEMA()関数
 def iDEMA(df, ma_period, ma_shift=0, applied_price='Close'):
@@ -353,7 +357,7 @@ if __name__ == '__main__':
     ohlc_ext = ext_ohlc(ohlc)
 
     #x = iMA(ohlc_ext, 14, ma_method='SMMA', applied_price='Close')
-    #x = iATR(ohlc_ext, 14)
+    x = iATR(ohlc_ext, 14)
     #x = iDEMA(ohlc_ext, 14, applied_price='Close')
     #x = iTEMA(ohlc_ext, 14, applied_price='Close')
     #x = iMomentum(ohlc_ext, 14)
@@ -379,11 +383,11 @@ if __name__ == '__main__':
     #x = iHLBand(ohlc, 20)
     #x = iAlligator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
-    x = iADX(ohlc_ext, 14)
+    #x = iADX(ohlc_ext, 14)
     #x = iADXWilder(ohlc_ext, 14)
     #x = iSAR(ohlc_ext, 0.02, 0.2)
 
-    #diff = ohlc['Ind0'] - x
-    diff0 = ohlc['Ind0'] - x['Main']
-    diff1 = ohlc['Ind1'] - x['PlusDI']
-    diff2 = ohlc['Ind2'] - x['MinusDI']
+    diff = ohlc['Ind0'] - x
+    #diff0 = ohlc['Ind0'] - x['Main']
+    #diff1 = ohlc['Ind1'] - x['PlusDI']
+    #diff2 = ohlc['Ind2'] - x['MinusDI']
