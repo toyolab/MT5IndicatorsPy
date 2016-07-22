@@ -195,14 +195,14 @@ def iFrAMA(df, ma_period, ma_shift=0, applied_price='Close'):
 
 # iRVI()関数
 def iRVI(df, ma_period):
-    CO = df['Close']-df['Open']
-    HL = df['High']-df['Low']
-    MA = CO+2*(CO.shift(1)+CO.shift(2))+CO.shift(3)
-    RA = HL+2*(HL.shift(1)+HL.shift(2))+HL.shift(3)
-    Main = MA.rolling(ma_period).sum()/RA.rolling(ma_period).sum()
-    Signal = (Main+2*(Main.shift(1)+Main.shift(2))+Main.shift(3))/6
+    CO = df['Close'].values - df['Open'].values
+    HL = df['High'].values - df['Low'].values
+    MA = lfilter([1/6,1/3,1/3,1/6], 1, CO)
+    RA = lfilter([1/6,1/3,1/3,1/6], 1, HL)
+    Main = MAonArray(MA, ma_period, 'SMA') / MAonArray(RA, ma_period, 'SMA')
+    Signal = lfilter([1/6,1/3,1/3,1/6], 1, Main)
     return pd.DataFrame({'Main': Main, 'Signal': Signal},
-                        columns=['Main', 'Signal'])
+                        columns=['Main', 'Signal'], index=df.index)
 
 # iWPR()関数
 def iWPR(df, period):
@@ -371,7 +371,7 @@ if __name__ == '__main__':
     #x = iTriX(ohlc_ext, 14)
     #x = iAMA(ohlc_ext, 15, 2, 30)
     #x = iFrAMA(ohlc_ext, 14)
-    #x = iRVI(ohlc_ext, 10)
+    x = iRVI(ohlc_ext, 10)
     #x = iWPR(ohlc_ext, 14)
     #x = iVIDyA(ohlc_ext, 15, 12)
     #x = iBands(ohlc_ext, 20, 2, bands_shift=5)
@@ -380,10 +380,11 @@ if __name__ == '__main__':
     #x = iAlligator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iADX(ohlc_ext, 14)
-    x = iADXWilder(ohlc_ext, 14)
+    #x = iADXWilder(ohlc_ext, 14)
     #x = iSAR(ohlc_ext, 0.02, 0.2)
 
     #diff = ohlc['Ind0'] - x
     diff0 = ohlc['Ind0'] - x['Main']
-    diff1 = ohlc['Ind1'] - x['PlusDI']
-    diff2 = ohlc['Ind2'] - x['MinusDI']
+    diff1 = ohlc['Ind1'] - x['Signal']
+    #diff1 = ohlc['Ind1'] - x['PlusDI']
+    #diff2 = ohlc['Ind2'] - x['MinusDI']
