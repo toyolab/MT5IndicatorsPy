@@ -282,17 +282,15 @@ def iGator(df, jaw_period, jaw_shift, teeth_period, teeth_shift,
                         columns=['Upper', 'Lower'])
 
 # iADX()関数
-@jit
 def iADX(df, adx_period):
     dP = df['High'].diff().clip_lower(0).values
     dM = -df['Low'].diff().clip_upper(0).values
-    for i in range(1,len(dP)):
-        if dP[i] > dM[i]: dM[i] = 0
-        if dP[i] < dM[i]: dP[i] = 0
+    dM[dP > dM] = 0
+    dP[dP < dM] = 0
     dP[0] = dP[1]
     dM[0] = dM[1]
-    TR = pd.DataFrame({'H':df['High'], 'C':df['Close'].shift()}).max(1).values\
-       - pd.DataFrame({'L':df['Low'], 'C':df['Close'].shift()}).min(1).values
+    TR = np.max(np.vstack((df['High'].values, shift(df['Close'].values))).T, axis=1)\
+       - np.min(np.vstack((df['Low'].values, shift(df['Close'].values))).T, axis=1)
     PlusDI = 100*MAonArray(dP/TR, adx_period, 'EMA')
     MinusDI = 100*MAonArray(dM/TR, adx_period, 'EMA')
     Main = MAonArray(100*np.abs(PlusDI-MinusDI)/(PlusDI+MinusDI), adx_period, 'EMA')
@@ -300,13 +298,11 @@ def iADX(df, adx_period):
                         columns=['Main', 'PlusDI', 'MinusDI'], index=df.index)
 
 # iADXWilder()関数
-@jit
 def iADXWilder(df, adx_period):
     dP = df['High'].diff().clip_lower(0).values
     dM = -df['Low'].diff().clip_upper(0).values
-    for i in range(1,len(dP)):
-        if dP[i] > dM[i]: dM[i] = 0
-        if dP[i] < dM[i]: dP[i] = 0
+    dM[dP > dM] = 0
+    dP[dP < dM] = 0
     dP[0] = dP[1]
     dM[0] = dM[1]
     ATR = iATR(df, adx_period, 'SMMA').values
@@ -357,7 +353,7 @@ if __name__ == '__main__':
     ohlc_ext = ext_ohlc(ohlc)
 
     #x = iMA(ohlc_ext, 14, ma_method='SMMA', applied_price='Close')
-    x = iATR(ohlc_ext, 14)
+    #x = iATR(ohlc_ext, 14)
     #x = iDEMA(ohlc_ext, 14, applied_price='Close')
     #x = iTEMA(ohlc_ext, 14, applied_price='Close')
     #x = iMomentum(ohlc_ext, 14)
@@ -384,10 +380,10 @@ if __name__ == '__main__':
     #x = iAlligator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iADX(ohlc_ext, 14)
-    #x = iADXWilder(ohlc_ext, 14)
+    x = iADXWilder(ohlc_ext, 14)
     #x = iSAR(ohlc_ext, 0.02, 0.2)
 
-    diff = ohlc['Ind0'] - x
-    #diff0 = ohlc['Ind0'] - x['Main']
-    #diff1 = ohlc['Ind1'] - x['PlusDI']
-    #diff2 = ohlc['Ind2'] - x['MinusDI']
+    #diff = ohlc['Ind0'] - x
+    diff0 = ohlc['Ind0'] - x['Main']
+    diff1 = ohlc['Ind1'] - x['PlusDI']
+    diff2 = ohlc['Ind2'] - x['MinusDI']
