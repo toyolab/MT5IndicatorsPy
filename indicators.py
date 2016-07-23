@@ -240,14 +240,15 @@ def iStochastic(df, Kperiod, Dperiod, slowing, ma_method='SMA', price_field='LOW
         low = df['Low']
     elif price_field == 'CLOSECLOSE':
         high = low = df['Close']
-    Hline = high.rolling(Kperiod).max()
-    Lline = low.rolling(Kperiod).min()
-    sumlow = (df['Close']-Lline).rolling(slowing).sum()
-    sumhigh = (Hline-Lline).rolling(slowing).sum()
+    Hline = high.rolling(Kperiod).max().values
+    Lline = low.rolling(Kperiod).min().values
+    close = df['Close'].values
+    sumlow = MAonArray(close-Lline, slowing, 'SMA')
+    sumhigh = MAonArray(Hline-Lline, slowing, 'SMA')
     Main = sumlow/sumhigh*100
-    Signal = MAonSeries(Main, Dperiod, ma_method)
+    Signal = MAonArray(Main, Dperiod, ma_method)
     return pd.DataFrame({'Main': Main, 'Signal': Signal},
-                        columns=['Main', 'Signal'])
+                        columns=['Main', 'Signal'], index=df.index)
 
 # iHLBand()関数
 def iHLBand(df, band_period, band_shift=0, price_field='LOWHIGH'):
@@ -371,11 +372,11 @@ if __name__ == '__main__':
     #x = iTriX(ohlc_ext, 14)
     #x = iAMA(ohlc_ext, 15, 2, 30)
     #x = iFrAMA(ohlc_ext, 14)
-    x = iRVI(ohlc_ext, 10)
+    #x = iRVI(ohlc_ext, 10)
     #x = iWPR(ohlc_ext, 14)
     #x = iVIDyA(ohlc_ext, 15, 12)
     #x = iBands(ohlc_ext, 20, 2, bands_shift=5)
-    #x = iStochastic(ohlc_ext, 10, 3, 5, ma_method='LWMA', price_field='CLOSECLOSE')
+    x = iStochastic(ohlc_ext, 10, 3, 5, ma_method='SMA', price_field='LOWHIGH')
     #x = iHLBand(ohlc, 20)
     #x = iAlligator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
