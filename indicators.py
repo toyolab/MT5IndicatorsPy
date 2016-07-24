@@ -316,34 +316,33 @@ def iADXWilder(df, adx_period):
 # iSAR()関数
 @jit
 def iSAR(df, step, maximum):
-    last_period = 0
     dir_long = True
     ACC = step
     SAR = df['Close'].values.copy()
     High = df['High'].values
     Low = df['Low'].values
+    Ep1 = High[0]
     for i in range(1,len(SAR)):
-        last_period += 1
         if dir_long == True:
-            Ep1 = High[i-last_period:i].max()
+            Ep1 = max(Ep1, High[i-1])
             SAR[i] = SAR[i-1]+ACC*(Ep1-SAR[i-1])
             Ep0 = max([Ep1, High[i]])
-            if Ep0 > Ep1 and ACC+step <= maximum: ACC+=step
+            if Ep0 > Ep1: ACC = min(ACC+step, maximum)
             if SAR[i] > Low[i]:
                 dir_long = False
                 SAR[i] = Ep0
-                last_period = 0
                 ACC = step
+                Ep1 = Low[i]
         else:
-            Ep1 = Low[i-last_period:i].min()
+            Ep1 = min(Ep1, Low[i-1])
             SAR[i] = SAR[i-1]+ACC*(Ep1-SAR[i-1])
             Ep0 = min([Ep1, Low[i]])
-            if Ep0 < Ep1 and ACC+step <= maximum: ACC+=step
+            if Ep0 < Ep1: ACC = min(ACC+step, maximum)
             if SAR[i] < High[i]:
                 dir_long = True
                 SAR[i] = Ep0
-                last_period = 0
                 ACC = step
+                Ep1 = High[i]
     return pd.Series(SAR, index=df.index)
 
 # 各関数のテスト
@@ -376,16 +375,16 @@ if __name__ == '__main__':
     #x = iWPR(ohlc_ext, 14)
     #x = iVIDyA(ohlc_ext, 15, 12)
     #x = iBands(ohlc_ext, 20, 2, bands_shift=5)
-    x = iStochastic(ohlc_ext, 10, 3, 5, ma_method='SMA', price_field='LOWHIGH')
+    #x = iStochastic(ohlc_ext, 10, 3, 5, ma_method='SMA', price_field='LOWHIGH')
     #x = iHLBand(ohlc, 20)
     #x = iAlligator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iADX(ohlc_ext, 14)
     #x = iADXWilder(ohlc_ext, 14)
-    #x = iSAR(ohlc_ext, 0.02, 0.2)
+    x = iSAR(ohlc_ext, 0.02, 0.2)
 
-    #diff = ohlc['Ind0'] - x
-    diff0 = ohlc['Ind0'] - x['Main']
-    diff1 = ohlc['Ind1'] - x['Signal']
+    diff = ohlc['Ind0'] - x
+    #diff0 = ohlc['Ind0'] - x['Main']
+    #diff1 = ohlc['Ind1'] - x['Signal']
     #diff1 = ohlc['Ind1'] - x['PlusDI']
     #diff2 = ohlc['Ind2'] - x['MinusDI']
