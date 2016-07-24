@@ -326,21 +326,19 @@ def iSAR(df, step, maximum):
         if dir_long == True:
             Ep1 = max(Ep1, High[i-1])
             SAR[i] = SAR[i-1]+ACC*(Ep1-SAR[i-1])
-            Ep0 = max([Ep1, High[i]])
-            if Ep0 > Ep1: ACC = min(ACC+step, maximum)
+            if High[i] > Ep1: ACC = min(ACC+step, maximum)
             if SAR[i] > Low[i]:
                 dir_long = False
-                SAR[i] = Ep0
+                SAR[i] = Ep1
                 ACC = step
                 Ep1 = Low[i]
         else:
             Ep1 = min(Ep1, Low[i-1])
             SAR[i] = SAR[i-1]+ACC*(Ep1-SAR[i-1])
-            Ep0 = min([Ep1, Low[i]])
-            if Ep0 < Ep1: ACC = min(ACC+step, maximum)
+            if Low[i] < Ep1: ACC = min(ACC+step, maximum)
             if SAR[i] < High[i]:
                 dir_long = True
-                SAR[i] = Ep0
+                SAR[i] = Ep1
                 ACC = step
                 Ep1 = High[i]
     return pd.Series(SAR, index=df.index)
