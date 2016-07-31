@@ -31,12 +31,21 @@ def ext_ohlc(df):
 def shift(x, n=1):
     return np.concatenate((np.zeros(n), x[:-n]))
 
+# SMA on Array
+@jit
+def SMAonArray(x, ma_period):
+    x[np.isnan(x)] = 0
+    y = np.empty(len(x))
+    y[:ma_period-1] = np.nan
+    y[ma_period-1] = np.sum(x[:ma_period])
+    for i in range(ma_period, len(x)):
+        y[i] = y[i-1] + x[i] - x[i-ma_period]
+    return y/ma_period
+
 # 共通移動平均 on Array
 def MAonArray(a, ma_period, ma_method):
     if ma_method == 'SMA':
-        h = np.ones(ma_period)/ma_period
-        y = lfilter(h, 1, a)
-        y[:ma_period-1] = 'NaN'
+        y = SMAonArray(a, ma_period)
     elif ma_method == 'EMA':
         alpha = 2/(ma_period+1)
         y,zf = lfilter([alpha], [1,alpha-1], a, zi=[a[0]*(1-alpha)])
@@ -46,7 +55,7 @@ def MAonArray(a, ma_period, ma_method):
     elif ma_method == 'LWMA':
         h = np.arange(ma_period, 0, -1)*2/ma_period/(ma_period+1)
         y = lfilter(h, 1, a)
-        y[:ma_period-1] = 'NaN'
+        y[:ma_period-1] = np.nan
     return y
     
 # 共通移動平均 on Series
@@ -99,8 +108,8 @@ def iAO(df):
 
 # iAC()関数
 def iAC(df):
-    AO = iAO(df)
-    return AO - MAonSeries(AO, 5, 'SMA')
+    AO = iAO(df).values
+    return pd.Series(AO - SMAonArray(AO, 5), index=df.index)
 
 # iBearsPower()関数
 def iBearsPower(df, ma_period):
@@ -113,23 +122,23 @@ def iBullsPower(df, ma_period):
 # iCCI()関数
 @jit
 def iCCI(df, ma_period, applied_price='Typical'):
-    SP = MAonArray(df[applied_price], ma_period, 'SMA')
     price = df[applied_price].values
+    SP = SMAonArray(price, ma_period)
     M = price - SP
     D = np.zeros(len(M))
     for i in range(len(D)):
         for j in range(ma_period):
-            D[i] += np.abs(price[i-j] - SP[i])
+            D[i] += abs(price[i-j] - SP[i])
     D *= 0.015/ma_period
     return pd.Series(M/D, index=df.index)
 
 # iDeMarker()関数
 def iDeMarker(df, ma_period):
-    DeMax = df['High'].diff().clip_lower(0)
-    DeMin = -df['Low'].diff().clip_upper(0)
-    SDeMax = MAonSeries(DeMax, ma_period, 'SMA')
-    SDeMin = MAonSeries(DeMin, ma_period, 'SMA')
-    return SDeMax/(SDeMax+SDeMin)
+    DeMax = df['High'].diff().clip_lower(0).values
+    DeMin = -df['Low'].diff().clip_upper(0).values
+    SDeMax = SMAonArray(DeMax, ma_period)
+    SDeMin = SMAonArray(DeMin, ma_period)
+    return pd.Series(SDeMax/(SDeMax+SDeMin), index=df.index)
 
 # iEnvelopes()関数
 def iEnvelopes(df, ma_period, deviation, ma_shift=0, ma_method='SMA', applied_price='Close'):
@@ -142,11 +151,11 @@ def iEnvelopes(df, ma_period, deviation, ma_shift=0, ma_method='SMA', applied_pr
 
 # iMACD()関数
 def iMACD(df, fast_period, slow_period, signal_period, applied_price='Close'):
-    price = df[applied_price]
-    Main = MAonSeries(price, fast_period, 'EMA') - MAonSeries(price, slow_period, 'EMA')
-    Signal = MAonSeries(Main, signal_period, 'SMA')
+    price = df[applied_price].values
+    Main = MAonArray(price, fast_period, 'EMA') - MAonArray(price, slow_period, 'EMA')
+    Signal = SMAonArray(Main, signal_period)
     return pd.DataFrame({'Main': Main, 'Signal': Signal},
-                        columns=['Main', 'Signal'])
+                        columns=['Main', 'Signal'], index=df.index)
 
 # iOsMA()関数
 def iOsMA(df, fast_period, slow_period, signal_period, applied_price='Close'):
@@ -199,7 +208,7 @@ def iRVI(df, ma_period):
     HL = df['High'].values - df['Low'].values
     MA = lfilter([1/6,1/3,1/3,1/6], 1, CO)
     RA = lfilter([1/6,1/3,1/3,1/6], 1, HL)
-    Main = MAonArray(MA, ma_period, 'SMA') / MAonArray(RA, ma_period, 'SMA')
+    Main = SMAonArray(MA, ma_period) / SMAonArray(RA, ma_period)
     Signal = lfilter([1/6,1/3,1/3,1/6], 1, Main)
     return pd.DataFrame({'Main': Main, 'Signal': Signal},
                         columns=['Main', 'Signal'], index=df.index)
@@ -243,8 +252,8 @@ def iStochastic(df, Kperiod, Dperiod, slowing, ma_method='SMA', price_field='LOW
     Hline = high.rolling(Kperiod).max().values
     Lline = low.rolling(Kperiod).min().values
     close = df['Close'].values
-    sumlow = MAonArray(close-Lline, slowing, 'SMA')
-    sumhigh = MAonArray(Hline-Lline, slowing, 'SMA')
+    sumlow = SMAonArray(close-Lline, slowing)
+    sumhigh = SMAonArray(Hline-Lline, slowing)
     Main = sumlow/sumhigh*100
     Signal = MAonArray(Main, Dperiod, ma_method)
     return pd.DataFrame({'Main': Main, 'Signal': Signal},
@@ -350,7 +359,7 @@ if __name__ == '__main__':
     ohlc = pd.read_csv(file, index_col='Time', parse_dates=True)
     ohlc_ext = ext_ohlc(ohlc)
 
-    #x = iMA(ohlc_ext, 14, ma_method='SMMA', applied_price='Close')
+    #x = iMA(ohlc_ext, 14, ma_method='SMA', applied_price='Close')
     #x = iATR(ohlc_ext, 14)
     #x = iDEMA(ohlc_ext, 14, applied_price='Close')
     #x = iTEMA(ohlc_ext, 14, applied_price='Close')
@@ -373,16 +382,16 @@ if __name__ == '__main__':
     #x = iWPR(ohlc_ext, 14)
     #x = iVIDyA(ohlc_ext, 15, 12)
     #x = iBands(ohlc_ext, 20, 2, bands_shift=5)
-    #x = iStochastic(ohlc_ext, 10, 3, 5, ma_method='SMA', price_field='LOWHIGH')
+    x = iStochastic(ohlc_ext, 10, 3, 5, ma_method='SMA', price_field='LOWHIGH')
     #x = iHLBand(ohlc, 20)
     #x = iAlligator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iADX(ohlc_ext, 14)
     #x = iADXWilder(ohlc_ext, 14)
-    x = iSAR(ohlc_ext, 0.02, 0.2)
+    #x = iSAR(ohlc_ext, 0.02, 0.2)
 
-    diff = ohlc['Ind0'] - x
-    #diff0 = ohlc['Ind0'] - x['Main']
-    #diff1 = ohlc['Ind1'] - x['Signal']
+    #diff = ohlc['Ind0'] - x
+    diff0 = ohlc['Ind0'] - x['Main']
+    diff1 = ohlc['Ind1'] - x['Signal']
     #diff1 = ohlc['Ind1'] - x['PlusDI']
     #diff2 = ohlc['Ind2'] - x['MinusDI']

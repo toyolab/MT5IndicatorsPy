@@ -1,8 +1,10 @@
 # coding: utf-8
 import numpy as np
 import pandas as pd
+from numba import jit
 
 # バックテスト
+@jit
 def Backtest(ohlc, BuyEntry, SellEntry, BuyExit, SellExit, lots=0.1, spread=2):
     Open = ohlc['Open'].values #始値
     Point = 0.0001 #1pipの値
