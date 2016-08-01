@@ -35,23 +35,42 @@ def shift(x, n=1):
 @jit
 def SMAonArray(x, ma_period):
     x[np.isnan(x)] = 0
-    y = np.empty(len(x))
+    y = np.empty_like(x)
     y[:ma_period-1] = np.nan
     y[ma_period-1] = np.sum(x[:ma_period])
     for i in range(ma_period, len(x)):
         y[i] = y[i-1] + x[i] - x[i-ma_period]
     return y/ma_period
 
+# EMA on Array
+@jit
+def EMAonArray(x, alpha):
+    x[np.isnan(x)] = 0
+    y = np.empty_like(x)
+    y[0] = x[0]
+    for i in range(1,len(x)):
+        y[i] = alpha*x[i] + (1-alpha)*y[i-1]
+    return y
+
+# Adaptive EMA on Array
+@jit
+def AEMAonArray(x, alpha):
+    x[np.isnan(x)] = 0
+    alpha[np.isnan(alpha)] = 0
+    y = np.empty_like(x)
+    y[0] = x[0]
+    for i in range(1,len(x)):
+        y[i] = alpha[i]*x[i] + (1-alpha[i])*y[i-1]
+    return y
+
 # 共通移動平均 on Array
 def MAonArray(a, ma_period, ma_method):
     if ma_method == 'SMA':
         y = SMAonArray(a, ma_period)
     elif ma_method == 'EMA':
-        alpha = 2/(ma_period+1)
-        y,zf = lfilter([alpha], [1,alpha-1], a, zi=[a[0]*(1-alpha)])
+        y = EMAonArray(a, 2/(ma_period+1))
     elif ma_method == 'SMMA':
-        alpha = 1/ma_period
-        y,zf = lfilter([alpha], [1,alpha-1], a, zi=[a[0]*(1-alpha)])
+        y = EMAonArray(a, 1/ma_period)
     elif ma_method == 'LWMA':
         h = np.arange(ma_period, 0, -1)*2/ma_period/(ma_period+1)
         y = lfilter(h, 1, a)
@@ -170,7 +189,6 @@ def iTriX(df, ma_period, applied_price='Close'):
     return EMA3.diff()/EMA3.shift()
 
 # iAMA()関数
-@jit
 def iAMA(df, ma_period, fast_period, slow_period, ma_shift=0, applied_price='Close'):
     price = df[applied_price]
     Signal = price.diff(ma_period).abs()
@@ -179,14 +197,10 @@ def iAMA(df, ma_period, fast_period, slow_period, ma_shift=0, applied_price='Clo
     FastSC = 2/(fast_period+1)
     SlowSC = 2/(slow_period+1)
     SSC = ER*(FastSC-SlowSC)+SlowSC
-    price = price.values
-    AMA = price.copy()
-    for i in range(ma_period, len(AMA)):
-        AMA[i] = AMA[i-1] + SSC[i]*SSC[i]*(price[i]-AMA[i-1])
+    AMA = AEMAonArray(price.values, SSC*SSC)
     return pd.Series(AMA, index=df.index).shift(ma_shift)
 
 # iFrAMA()関数
-@jit
 def iFrAMA(df, ma_period, ma_shift=0, applied_price='Close'):
     price = df[applied_price]
     H = df['High']
@@ -196,10 +210,7 @@ def iFrAMA(df, ma_period, ma_shift=0, applied_price='Close'):
     N3 = (H.rolling(2*ma_period).max()-L.rolling(2*ma_period).min())/(2*ma_period)
     D = (np.log(N1.values+N2.values)-np.log(N3.values))/np.log(2)
     A = np.exp(-4.6*(D-1))
-    price = price.values
-    FRAMA = price.copy()
-    for i in range(2*ma_period, len(FRAMA)):
-        FRAMA[i] = FRAMA[i-1] + A[i]*(price[i]-FRAMA[i-1])
+    FRAMA = AEMAonArray(price.values, A)
     return pd.Series(FRAMA, index=df.index).shift(ma_shift)
 
 # iRVI()関数
@@ -220,16 +231,12 @@ def iWPR(df, period):
     return (df['Close']-Max)/(Max-Min)*100
 
 # iVIDyA()関数
-@jit
 def iVIDyA(df, cmo_period, ma_period, ma_shift=0, applied_price='Close'):
     price = df[applied_price]
     UpSum = price.diff().clip_lower(0).rolling(cmo_period).sum()
     DnSum = -price.diff().clip_upper(0).rolling(cmo_period).sum()
     CMO = np.abs((UpSum-DnSum)/(UpSum+DnSum)).values
-    price = price.values
-    VIDYA = price.copy()
-    for i in range(cmo_period, len(VIDYA)):
-        VIDYA[i] = VIDYA[i-1] + 2/(ma_period+1)*CMO[i]*(price[i]-VIDYA[i-1])
+    VIDYA = AEMAonArray(price.values, 2/(ma_period+1)*CMO)
     return pd.Series(VIDYA, index=df.index).shift(ma_shift)
 
 # iBands()関数
@@ -359,7 +366,10 @@ if __name__ == '__main__':
     ohlc = pd.read_csv(file, index_col='Time', parse_dates=True)
     ohlc_ext = ext_ohlc(ohlc)
 
-    #x = iMA(ohlc_ext, 14, ma_method='SMA', applied_price='Close')
+    #x = iMA(ohlc_ext, 14, ma_method='SMA')
+    #x = iMA(ohlc_ext, 14, ma_method='EMA')
+    #x = iMA(ohlc_ext, 14, ma_method='SMMA', applied_price='Median')
+    #x = iMA(ohlc_ext, 14, ma_method='LWMA', applied_price='Typical')
     #x = iATR(ohlc_ext, 14)
     #x = iDEMA(ohlc_ext, 14, applied_price='Close')
     #x = iTEMA(ohlc_ext, 14, applied_price='Close')
@@ -380,9 +390,9 @@ if __name__ == '__main__':
     #x = iFrAMA(ohlc_ext, 14)
     #x = iRVI(ohlc_ext, 10)
     #x = iWPR(ohlc_ext, 14)
-    #x = iVIDyA(ohlc_ext, 15, 12)
+    x = iVIDyA(ohlc_ext, 15, 12)
     #x = iBands(ohlc_ext, 20, 2, bands_shift=5)
-    x = iStochastic(ohlc_ext, 10, 3, 5, ma_method='SMA', price_field='LOWHIGH')
+    #x = iStochastic(ohlc_ext, 10, 3, 5, ma_method='SMA', price_field='LOWHIGH')
     #x = iHLBand(ohlc, 20)
     #x = iAlligator(ohlc_ext, 13, 8, 8, 5, 5, 3)
     #x = iGator(ohlc_ext, 13, 8, 8, 5, 5, 3)
@@ -390,8 +400,8 @@ if __name__ == '__main__':
     #x = iADXWilder(ohlc_ext, 14)
     #x = iSAR(ohlc_ext, 0.02, 0.2)
 
-    #diff = ohlc['Ind0'] - x
-    diff0 = ohlc['Ind0'] - x['Main']
-    diff1 = ohlc['Ind1'] - x['Signal']
-    #diff1 = ohlc['Ind1'] - x['PlusDI']
-    #diff2 = ohlc['Ind2'] - x['MinusDI']
+    dif = ohlc['Ind0'] - x
+    #dif0 = ohlc['Ind0'] - x['Main']
+    #dif1 = ohlc['Ind1'] - x['Signal']
+    #dif1 = ohlc['Ind1'] - x['PlusDI']
+    #dif2 = ohlc['Ind2'] - x['MinusDI']
