@@ -1,7 +1,7 @@
 # coding: utf-8
 import numpy as np
 import pandas as pd
-from scipy.signal import lfilter
+from scipy.signal import lfilter, lfilter_zi
 from numba import jit
 
 # dfのデータからtfで指定するタイムフレームの4本足データを作成する関数
@@ -92,23 +92,49 @@ def iATR(df, ma_period, ma_method='SMA'):
     return pd.Series(MAonArray(TR, ma_period, ma_method), index=df.index)
     
 # iDEMA()関数
+@jit
 def iDEMA(df, ma_period, ma_shift=0, applied_price='Close'):
-    EMA = MAonSeries(df[applied_price], ma_period, ma_method='EMA')
-    EMA2 = MAonSeries(EMA, ma_period, ma_method='EMA')
-    return (2*EMA-EMA2).shift(ma_shift)
+    alpha = 2/(ma_period+1)
+    a1 = 2*(alpha-1)
+    a2 = (1-alpha)**2
+    b0 = alpha*(2-alpha)
+    b1 = 2*alpha*(alpha-1)
+    x = df[applied_price].values
+    y = np.empty_like(x)
+    y[0] = x[0]
+    y[1] = b0*x[1] + b1*x[0] - a1*y[0] - a2*y[0]
+    for i in range(2,len(x)):
+        y[i] = b0*x[i] + b1*x[i-1] - a1*y[i-1] - a2*y[i-2]
+    return pd.Series(y, index=df.index).shift(ma_shift)
 
 # iTEMA()関数
+@jit
 def iTEMA(df, ma_period, ma_shift=0, applied_price='Close'):
-    EMA = MAonSeries(df[applied_price], ma_period, ma_method='EMA')
-    EMA2 = MAonSeries(EMA, ma_period, ma_method='EMA')
-    EMA3 = MAonSeries(EMA2, ma_period, ma_method='EMA')
-    return (3*EMA-3*EMA2+EMA3).shift(ma_shift)
+    alpha = 2/(ma_period+1)
+    a1 = 3*(alpha-1)
+    a2 = 3*(1-alpha)**2
+    a3 = (alpha-1)**3
+    b0 = 3*alpha*(1-alpha)+alpha**3
+    b1 = 3*alpha*(alpha-2)*(1-alpha)
+    b2 = 3*alpha*(1-alpha)**2
+    x = df[applied_price].values
+    y = np.empty_like(x)
+    y[0] = x[0]
+    y[1] = b0*x[1] + b1*x[0] + b2*x[0] - a1*y[0] - a2*y[0] - a3*y[0]
+    y[2] = b0*x[2] + b1*x[1] + b2*x[0] - a1*y[1] - a2*y[0] - a3*y[0]
+    for i in range(3,len(x)):
+        y[i] = b0*x[i] + b1*x[i-1] + b2*x[i-2] - a1*y[i-1] - a2*y[i-2] - a3*y[i-3]
+    return pd.Series(y, index=df.index).shift(ma_shift)
 
 # iMomentum()関数
+@jit
 def iMomentum(df, mom_period, applied_price='Close'):
-    price = df[applied_price]
-    shift = price.shift(mom_period)
-    return price/shift*100
+    x = df[applied_price].values
+    y = np.empty_like(x)
+    y[:mom_period] = np.nan
+    for i in range(mom_period, len(x)):
+        y[i] = x[i]/x[i-mom_period]*100
+    return pd.Series(y, index=df.index)
     
 # iRSI()関数
 def iRSI(df, ma_period, applied_price='Close'):
@@ -373,7 +399,7 @@ if __name__ == '__main__':
     #x = iATR(ohlc_ext, 14)
     #x = iDEMA(ohlc_ext, 14, applied_price='Close')
     #x = iTEMA(ohlc_ext, 14, applied_price='Close')
-    #x = iMomentum(ohlc_ext, 14)
+    x = iMomentum(ohlc_ext, 14)
     #x = iRSI(ohlc_ext, 14)
     #x = iStdDev(ohlc_ext, 14, ma_shift=3, applied_price='Weighted')
     #x = iAO(ohlc_ext)
@@ -390,7 +416,7 @@ if __name__ == '__main__':
     #x = iFrAMA(ohlc_ext, 14)
     #x = iRVI(ohlc_ext, 10)
     #x = iWPR(ohlc_ext, 14)
-    x = iVIDyA(ohlc_ext, 15, 12)
+    #x = iVIDyA(ohlc_ext, 15, 12)
     #x = iBands(ohlc_ext, 20, 2, bands_shift=5)
     #x = iStochastic(ohlc_ext, 10, 3, 5, ma_method='SMA', price_field='LOWHIGH')
     #x = iHLBand(ohlc, 20)
