@@ -385,10 +385,24 @@ def iSAR(df, step, maximum):
                 Ep1 = High[i]
     return pd.Series(SAR, index=df.index)
 
+# iIchimoku()関数
+def iIchimoku(df, tenkan_period, kijun_period, senkoub_period):
+    high = df['High']
+    low = df['Low']
+    Tenkan = (high.rolling(tenkan_period).max()+low.rolling(tenkan_period).min())/2
+    Kijun = (high.rolling(kijun_period).max()+low.rolling(kijun_period).min())/2
+    SenkouA = (Tenkan+Kijun).shift(kijun_period)/2
+    SenkouB = (high.rolling(senkoub_period).max()+low.rolling(senkoub_period).min()).shift(kijun_period)/2
+    Chikou = df['Close'].shift(-kijun_period)
+    return pd.DataFrame({'Tenkan': Tenkan, 'Kijun': Kijun, 'SenkouA': SenkouA,
+                         'SenkouB': SenkouB, 'Chikou': Chikou},
+                        columns=['Tenkan', 'Kijun', 'SenkouA', 'SenkouB', 'Chikou'],
+                        index=df.index)
+
 # 各関数のテスト
 if __name__ == '__main__':
 
-    file = 'USDJPY.f16385.txt'
+    file = 'USDJPY16385.txt'
     ohlc = pd.read_csv(file, index_col='Time', parse_dates=True)
     ohlc_ext = ext_ohlc(ohlc)
 
@@ -399,7 +413,7 @@ if __name__ == '__main__':
     #x = iATR(ohlc_ext, 14)
     #x = iDEMA(ohlc_ext, 14, applied_price='Close')
     #x = iTEMA(ohlc_ext, 14, applied_price='Close')
-    x = iMomentum(ohlc_ext, 14)
+    #x = iMomentum(ohlc_ext, 14)
     #x = iRSI(ohlc_ext, 14)
     #x = iStdDev(ohlc_ext, 14, ma_shift=3, applied_price='Weighted')
     #x = iAO(ohlc_ext)
@@ -425,9 +439,15 @@ if __name__ == '__main__':
     #x = iADX(ohlc_ext, 14)
     #x = iADXWilder(ohlc_ext, 14)
     #x = iSAR(ohlc_ext, 0.02, 0.2)
+    x = iIchimoku(ohlc_ext, 9, 26, 52)
 
-    dif = ohlc['Ind0'] - x
+    #dif = ohlc['Ind0'] - x
     #dif0 = ohlc['Ind0'] - x['Main']
     #dif1 = ohlc['Ind1'] - x['Signal']
     #dif1 = ohlc['Ind1'] - x['PlusDI']
     #dif2 = ohlc['Ind2'] - x['MinusDI']
+    dif0 = ohlc['Ind0'] - x['Tenkan']
+    dif1 = ohlc['Ind1'] - x['Kijun']
+    dif2 = ohlc['Ind2'] - x['SenkouA']
+    dif3 = ohlc['Ind3'] - x['SenkouB']
+    dif4 = ohlc['Ind4'] - x['Chikou']

@@ -38,7 +38,7 @@ MetaTrader5のテクニカル指標関数をPythonで記述したものです。
 * [iFrAMA()](https://www.mql5.com/ja/docs/indicators/iframa) - [フラクタル適応型移動平均](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/fama)
 * [iGator()](https://www.mql5.com/ja/docs/indicators/igator) - [ゲーターオシレーター](http://www.metatrader5.com/ja/terminal/help/indicators/bw_indicators/go) #`'Upper','Lower'`
 * iHLBand() not included in MQL5 - HLバンド #`'Upper','Lower'`
-*    iIchimoku not implemented
+* [iIchimoku()](https://www.mql5.com/ja/docs/indicators/iichimoku) - [一目均衡表](http://www.metatrader5.com/ja/terminal/help/indicators/trend_indicators/ikh) #`'Tenkan','Kijun','SenkouA','SenkouB','Chikou'`
 *    iBWMFI not implemented, requires volume
 * [iMomentum()](https://www.mql5.com/ja/docs/indicators/imomentum) - [モメンタム](http://www.metatrader5.com/ja/terminal/help/indicators/oscillators/momentum)
 *    iMFI not implemented, requires volume
